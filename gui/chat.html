@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>c-chat — Sector 2-B</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Share+Tech+Mono&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="chat-page">
+
+  <!-- Titlebar -->
+  <div class="titlebar">
+    <span class="titlebar-title">C — CHAT &nbsp;·&nbsp; <span id="header-server"></span></span>
+    <div class="titlebar-controls">
+      <button onclick="require('electron').ipcRenderer.send('window-minimize')">─</button>
+      <button onclick="require('electron').ipcRenderer.send('window-maximize')">□</button>
+      <button class="close-btn" onclick="require('electron').ipcRenderer.send('window-close')">✕</button>
+    </div>
+  </div>
+
+  <!-- Background -->
+  <div class="bg-layer"></div>
+  <div class="bg-overlay chat-overlay"></div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+
+  <!-- Chat Layout -->
+  <div class="chat-layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <div class="my-avatar-wrap">
+          <img id="my-avatar" src="" alt="" />
+          <div class="online-dot"></div>
+        </div>
+        <div class="my-info">
+          <span class="my-username" id="my-username"></span>
+          <span class="my-status">● CONNECTED</span>
+        </div>
+      </div>
+      <div class="sidebar-divider"><span>CHANNEL</span></div>
+      <div class="channel-name">
+        <span class="channel-icon">⛧</span>
+        <span># sector-2b</span>
+      </div>
+      <div class="sidebar-divider"><span>USERS ONLINE</span></div>
+      <div class="user-list" id="user-list"></div>
+
+      <div class="sidebar-footer">
+        <button class="btn-disconnect" id="disconnect-btn">DISCONNECT</button>
+      </div>
+    </div>
+
+    <!-- Main Chat -->
+    <div class="chat-main">
+      <div class="messages" id="messages"></div>
+
+      <div class="input-area">
+        <div class="input-wrap">
+          <input
+            type="text"
+            id="msg-input"
+            placeholder="Transmit a message..."
+            maxlength="512"
+            autocomplete="off"
+          />
+          <button id="send-btn">SEND</button>
+        </div>
+        <div class="input-hint">Press Enter to send &nbsp;·&nbsp; /quit to disconnect</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="chat.js"></script>
+</body>
+</html>

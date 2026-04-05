@@ -1,128 +1,189 @@
 # c-chat 💬
 
-A lightweight chat application written in C — TCP sockets, real-time messaging, and full cross-platform support. Available as both a terminal client and a native GUI client (no browser, no Electron).
+A lightweight terminal chat application written in C — TCP sockets, POSIX threads, real-time messaging.
+Comes with a **gothic-themed desktop GUI** built in Electron, usable on Linux and Windows.
 
-![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)
-![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey?style=for-the-badge)
+[![C](https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white)](https://github.com/AmoiiKane/c-chat)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-lightgrey?style=for-the-badge)](https://github.com/AmoiiKane/c-chat)
+[![Electron](https://img.shields.io/badge/GUI-Electron-47848F?style=for-the-badge&logo=electron&logoColor=white)](https://github.com/AmoiiKane/c-chat)
 
 ---
 
 ## Features
 
 - 🔌 **TCP socket server** — handles up to 32 simultaneous clients
-- 🧵 **Multithreaded** — one thread per client, non-blocking broadcasts
+- 🧵 **Multithreaded** — one `pthread` per client, non-blocking broadcasts
 - 📡 **Real-time messaging** — messages instantly broadcast to all connected users
-- 👤 **Usernames** — clients pick a username on connect
-- 🚪 **Join/leave notifications** — room announces when users connect or disconnect
+- 👤 **Usernames** — clients pick a callsign on connect
+- 🖼️ **Profile pictures** — GUI clients can set a custom avatar image
+- 🚪 **Join/leave notifications** — the room announces when users connect or disconnect
 - 🛑 **Graceful shutdown** — `Ctrl+C` cleans up all connections
-- 🖥️ **GUI client** — native desktop window, no terminal required
-- 🪟 **Cross-platform** — runs on Linux, macOS, and Windows natively
+- 🎨 **Gothic GUI** — dystopian desktop client, frameless window, ANSI-inspired design
+- 🌐 **Cross-network** — connect over LAN or Tailscale from anywhere in the world
 
 ---
 
-## Quick Setup (recommended)
+## Architecture
 
-These scripts check for all dependencies, fix the project structure, and build everything in one shot.
-
-### Linux / macOS
-```bash
-chmod +x setup.sh
-./setup.sh
+```
+GUI Client (Electron)      Terminal Client (C)
+       │                          │
+       └──────────┬───────────────┘
+                  ▼
+        Server (C · TCP :8080)
+                  │
+        broadcast to all clients
 ```
 
-### Windows
-Right-click `setup.bat` → **Run as administrator**
-
-The scripts auto-detect your OS/distro and install any missing packages, then build all binaries. Jump straight to [Usage](#usage) after running them.
-
----
-
-## Manual Setup / Dependencies
-
-### Terminal client (`server` + `client`)
-No extra dependencies — just a C compiler.
-
-| Platform | Compiler  | Notes                         |
-|----------|-----------|-------------------------------|
-| Linux    | GCC       | `pthread` included in glibc   |
-| macOS    | GCC/Clang | `pthread` included            |
-| Windows  | MinGW-w64 | Winsock2 linked automatically |
-
-### GUI client (`gui_client`)
-Requires GTK3 and WebKitGTK. Only needed if you want the graphical interface.
-
-| Platform | Install command |
-|----------|----------------|
-| Arch Linux | `sudo pacman -S gtk3 webkit2gtk-4.1` |
-| Ubuntu / Debian | `sudo apt install libgtk-3-dev libwebkit2gtk-4.1-dev` |
-| Fedora | `sudo dnf install gtk3-devel webkit2gtk4.1-devel` |
-| macOS | `brew install gtk+3 webkit2gtk` |
-| Windows | WebView2 is bundled with Windows 11 — no extra install needed |
+The **server is a compiled C binary** — it runs on Linux only (or WSL on Windows).
+The **GUI client is Electron** — it runs natively on Linux and Windows.
+The **terminal client** is a compiled C binary for Linux/macOS.
 
 ---
 
-## Build
+## Project Structure
 
-### Linux / macOS
+```
+c-chat/
+├── src/
+│   ├── server.c      # TCP server — pthread per client, broadcast, mutex
+│   ├── client.c      # Terminal TCP client — threaded send/receive
+│   └── common.h      # Shared constants and buffer sizes
+├── gui/
+│   ├── main.js       # Electron main process — TCP socket bridge
+│   ├── index.html    # Login screen
+│   ├── chat.html     # Chat screen
+│   ├── style.css     # Gothic theme
+│   ├── login.js      # Login logic
+│   ├── chat.js       # Chat logic
+│   ├── package.json  # Electron dependencies
+│   └── assets/
+│       └── bg.jpg    # Background wallpaper
+├── Makefile
+└── README.md
+```
+
+---
+
+## Running the Server (Linux)
+
+The server must run on a Linux machine. It does **not** run natively on Windows — use WSL if you're on Windows and want to self-host.
+
+### Build
+
 ```bash
 git clone https://github.com/AmoiiKane/c-chat.git
 cd c-chat
 make
 ```
 
-### Arch Linux
-```bash
-sudo pacman -S gtk3 webkit2gtk-4.1
-git clone https://github.com/AmoiiKane/c-chat.git
-cd c-chat
-make
+Requires GCC. Binaries go to `bin/`:
+
+```
+bin/server
+bin/client
 ```
 
-### Windows
-Install [MinGW-w64](https://winlibs.com) first, then open Command Prompt:
-```cmd
-git clone https://github.com/AmoiiKane/c-chat.git
-cd c-chat
-make
-```
-
-For a release build (optimized, no debug symbols):
-```bash
-make release
-```
-
-Binaries are placed in `bin/`:
-```
-bin/server        (Linux/macOS)
-bin/server.exe    (Windows)
-bin/client        (Linux/macOS)
-bin/client.exe    (Windows)
-bin/gui_client    (Linux/macOS — requires GTK + WebKitGTK)
-bin/gui_client.exe (Windows — requires WebView2)
-```
-
----
-
-## Usage
-
-### Server
-
-Start the server on any machine (terminal or background):
+### Start
 
 ```bash
-# Linux / macOS
 ./bin/server
-
-# Windows
-bin\server.exe
 ```
 
-The server listens on port `8080` by default. Keep it running — all clients connect to it.
+The server listens on `TCP :8080`. Keep this terminal open — it's the hub all clients connect to.
 
 ---
 
-### Terminal client
+## Connecting from Another Machine
+
+### Option A — Same local network (LAN)
+
+Find the server machine's local IP:
+
+```bash
+ip a | grep inet
+```
+
+Look for something like `192.168.x.x`. That's the address clients use.
+
+### Option B — Over the internet with Tailscale (recommended)
+
+Tailscale creates a private encrypted network between machines. No port forwarding, no public IP needed.
+
+**On the server machine (Linux):**
+
+```bash
+# Install Tailscale
+curl -fsSL https://tailscale.com/install.sh | sh
+sudo tailscale up
+
+# Get your Tailscale IP — share this with your friends
+tailscale ip -4
+```
+
+It will look like `100.x.x.x`. That's the address everyone uses to connect.
+
+**On each client machine (Windows or Linux):**
+
+1. Download and install Tailscale from [tailscale.com/download](https://tailscale.com/download)
+2. Sign in with the **same account** as the server, or get invited via the admin console at [login.tailscale.com](https://login.tailscale.com)
+3. Open the GUI client, enter the server's Tailscale IP and port `8080`
+
+> **Inviting someone to your Tailscale network:**
+> Go to [login.tailscale.com](https://login.tailscale.com) → Settings → Users → Invite user.
+> They install Tailscale, log in, and they're instantly on your private network.
+
+---
+
+## GUI Client Setup
+
+The GUI client works on **Linux and Windows**. It connects to the C server over TCP.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org) (v18 or later) — [download for Windows](https://nodejs.org/en/download)
+- Git — [download for Windows](https://git-scm.com/download/win)
+
+### Linux
+
+```bash
+git clone https://github.com/AmoiiKane/c-chat.git
+cd c-chat/gui
+npm install
+npm start
+```
+
+### Windows
+
+Open **PowerShell** or **Command Prompt**:
+
+```powershell
+git clone https://github.com/AmoiiKane/c-chat.git
+cd c-chat\gui
+npm install
+npm start
+```
+
+> If `npm install` fails with a script execution error, run this first in PowerShell (as Administrator):
+> ```powershell
+> Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+> ```
+
+A gothic desktop window will open. Fill in:
+
+| Field | What to enter |
+|-------|--------------|
+| **Callsign** | Your username |
+| **Server Address** | The server's IP (LAN or Tailscale) |
+| **Port** | `8080` (default) |
+| **Avatar** | Any image file from your machine |
+
+Click **ENTER THE SECTOR** to connect.
+
+---
+
+## Terminal Client (Linux / macOS only)
 
 ```bash
 # Connect to localhost
@@ -133,68 +194,46 @@ The server listens on port `8080` by default. Keep it running — all clients co
 
 # Custom host and port
 ./bin/client 192.168.1.10 9090
-
-# Windows
-bin\client.exe 192.168.1.10
-bin\client.exe 192.168.1.10 9090
 ```
 
 **Commands inside the chat:**
+
 ```
 /quit    — disconnect from the server
 ```
 
 ---
 
-### GUI client
+## Troubleshooting
 
-Launch the graphical client — no terminal required:
+**"Connection refused" on Windows GUI:**
+- Make sure the server is running (`./bin/server` on the Linux machine)
+- Double-check the IP address — use the Tailscale IP (`100.x.x.x`), not localhost
+- Make sure both machines are on the same Tailscale network
 
+**`npm install` fails on Windows:**
+- Make sure Node.js is installed: `node -v` should return a version number
+- Run PowerShell as Administrator and set the execution policy (see above)
+
+**`make` not found on Linux:**
+- Arch: `sudo pacman -S base-devel`
+- Ubuntu/Debian: `sudo apt install build-essential`
+
+**Port already in use:**
 ```bash
-# Linux / macOS
-./bin/gui_client
-
-# Windows
-bin\gui_client.exe
+ss -tlnp | grep 8080
+kill <PID>
 ```
-
-A native desktop window opens with a connection screen. Fill in your username, the server's IP address, and port (default `8080`), then click **Connect**. The chat interface appears automatically once connected.
-
-**Using with Tailscale:** If the server is on a Tailscale network, enter the server's Tailscale IP (e.g. `100.x.x.x`) or its MagicDNS hostname in the host field. No other configuration needed.
 
 ---
 
-## How it works
-
-```
-GUI/Terminal     GUI/Terminal     GUI/Terminal
-  Client A ──────┐
-  Client B ───────┼──► Server (TCP :8080) ──► broadcast to all other clients
-  Client C ───────┘
-```
+## How It Works
 
 1. Server listens on `TCP :8080`
-2. Each new connection spawns a dedicated thread
+2. Each new connection spawns a dedicated `pthread`
 3. Incoming messages are broadcast to all other connected clients under a mutex lock
-4. Server stays alive if a client disconnects abruptly
-5. GUI client embeds a WebKitGTK webview — the chat UI is HTML/CSS/JS, the networking is C
-
----
-
-## Project Structure
-
-```
-c-chat/
-├── src/
-│   ├── server.c       # TCP server, one thread per client, broadcast
-│   ├── client.c       # TCP client, threaded send/receive
-│   ├── gui_client.c   # Native GUI client (GTK + WebKitGTK)
-│   └── common.h       # Cross-platform socket/thread abstraction
-├── Makefile           # Auto-detects OS and available GUI deps
-├── setup.sh           # Linux/macOS one-shot setup + build script
-├── setup.bat          # Windows one-shot setup + build script
-└── README.md
-```
+4. `SIGPIPE` is ignored — the server stays alive if a client disconnects abruptly
+5. The Electron GUI bridges TCP via Node.js `net` module — no browser, native window
 
 ---
 

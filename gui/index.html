@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>c-chat — Enter the Sector</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Share+Tech+Mono&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+</head>
+<body class="login-page">
+
+  <!-- Titlebar -->
+  <div class="titlebar">
+    <span class="titlebar-title">C — CHAT</span>
+    <div class="titlebar-controls">
+      <button onclick="require('electron').ipcRenderer.send('window-minimize')">─</button>
+      <button onclick="require('electron').ipcRenderer.send('window-maximize')">□</button>
+      <button class="close-btn" onclick="require('electron').ipcRenderer.send('window-close')">✕</button>
+    </div>
+  </div>
+
+  <!-- Background -->
+  <div class="bg-layer"></div>
+  <div class="bg-overlay"></div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
+
+  <!-- Login Panel -->
+  <div class="login-wrapper">
+    <div class="login-panel">
+      <div class="panel-glow"></div>
+
+      <div class="login-header">
+        <div class="sigil">⛧</div>
+        <h1 class="title-main">C-CHAT</h1>
+        <p class="title-sub">SECTOR 2-B COMMUNICATIONS</p>
+        <div class="title-divider"><span>⬥</span></div>
+      </div>
+
+      <div class="form-group">
+        <label>CALLSIGN</label>
+        <input type="text" id="username" placeholder="Enter your alias..." maxlength="24" autocomplete="off" />
+      </div>
+
+      <div class="form-group">
+        <label>SERVER ADDRESS</label>
+        <div class="ip-row">
+          <input type="text" id="host" placeholder="127.0.0.1" value="127.0.0.1" autocomplete="off" />
+          <span class="port-sep">:</span>
+          <input type="text" id="port" placeholder="8080" value="8080" style="width:80px" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>AVATAR</label>
+        <div class="avatar-row">
+          <div class="avatar-preview" id="avatar-preview">
+            <span class="avatar-placeholder">?</span>
+          </div>
+          <button class="btn-secondary" id="pick-avatar-btn">Choose Image</button>
+          <span class="avatar-name" id="avatar-name">No image selected</span>
+        </div>
+      </div>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <button class="btn-connect" id="connect-btn">
+        <span class="btn-text">ENTER THE SECTOR</span>
+        <span class="btn-loader" style="display:none">CONNECTING...</span>
+      </button>
+
+      <div class="login-footer">
+        <span>TCP · POSIX THREADS · RAW SOCKETS</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
